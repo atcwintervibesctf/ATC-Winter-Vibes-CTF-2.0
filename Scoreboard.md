@@ -1,5 +1,9 @@
-Place        Team       Score 
-
-1.      Dokgodai     2650
-2.      squ1rrel     2625
-3.       
+{
+  "title": "Scoreboard",
+  "scores": [
+    { "rank": 1, "team": "PlayerOne", "score": 1500 },
+    { "rank": 2, "team": "PlayerTwo", "score": 1200 },
+    { "rank": 3, "team": "PlayerThree", "score": 900 }
+  ]
+}
+  
