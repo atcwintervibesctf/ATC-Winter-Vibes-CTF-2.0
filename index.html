@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATC CTF 2.0 Scoreboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Snowflakes */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 9999;
+            user-select: none;
+            cursor: default;
+            animation-name: snowfall;
+            animation-duration: 10s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            color: #fff;
+            font-size: 1em;
+            opacity: 0.8;
+        }
+
+        @keyframes snowfall {
+            0% {
+                transform: translateY(0vh) translateX(0);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh) translateX(100px);
+                opacity: 0.3;
+            }
+        }
+
+        .snowflake:nth-of-type(0) { left: 1%; animation-delay: 0s; animation-duration: 8s; }
+        .snowflake:nth-of-type(1) { left: 10%; animation-delay: 1s; animation-duration: 10s; }
+        .snowflake:nth-of-type(2) { left: 20%; animation-delay: 0.5s; animation-duration: 12s; }
+        .snowflake:nth-of-type(3) { left: 30%; animation-delay: 2s; animation-duration: 9s; }
+        .snowflake:nth-of-type(4) { left: 40%; animation-delay: 3s; animation-duration: 11s; }
+        .snowflake:nth-of-type(5) { left: 50%; animation-delay: 1.5s; animation-duration: 10s; }
+        .snowflake:nth-of-type(6) { left: 60%; animation-delay: 4s; animation-duration: 8s; }
+        .snowflake:nth-of-type(7) { left: 70%; animation-delay: 2.5s; animation-duration: 12s; }
+        .snowflake:nth-of-type(8) { left: 80%; animation-delay: 0.8s; animation-duration: 9s; }
+        .snowflake:nth-of-type(9) { left: 90%; animation-delay: 3.5s; animation-duration: 11s; }
+        .snowflake:nth-of-type(10) { left: 5%; animation-delay: 1.2s; animation-duration: 10s; }
+        .snowflake:nth-of-type(11) { left: 15%; animation-delay: 4.5s; animation-duration: 8s; }
+        .snowflake:nth-of-type(12) { left: 25%; animation-delay: 0.3s; animation-duration: 12s; }
+        .snowflake:nth-of-type(13) { left: 35%; animation-delay: 2.8s; animation-duration: 9s; }
+        .snowflake:nth-of-type(14) { left: 45%; animation-delay: 1.8s; animation-duration: 11s; }
+        .snowflake:nth-of-type(15) { left: 55%; animation-delay: 3.2s; animation-duration: 10s; }
+        .snowflake:nth-of-type(16) { left: 65%; animation-delay: 0.6s; animation-duration: 8s; }
+        .snowflake:nth-of-type(17) { left: 75%; animation-delay: 4.2s; animation-duration: 12s; }
+        .snowflake:nth-of-type(18) { left: 85%; animation-delay: 2.2s; animation-duration: 9s; }
+        .snowflake:nth-of-type(19) { left: 95%; animation-delay: 1.6s; animation-duration: 11s; }
+
+        .table-container {
+            overflow-x: auto;
+            padding: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        th:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        th.sortable::after {
+            content: '⇅';
+            position: absolute;
+            right: 15px;
+            opacity: 0.5;
+        }
+
+        th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+        }
+
+        th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        td {
+            padding: 15px;
+        }
+
+        .pos-cell {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .team-cell {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .score-cell {
+            font-weight: 600;
+            color: #27ae60;
+            font-size: 1.1em;
+        }
+
+        .medal {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .gold {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+        }
+
+        .silver {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            color: #000;
+        }
+
+        .bronze {
+            background: linear-gradient(135deg, #cd7f32, #e6a15c);
+            color: #fff;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9em;
+            background: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            th, td {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .table-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Snowflakes -->
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+
+    <div class="container">
+        <header>
+            <h1>❄️ ATC CTF 2.0 Scoreboard ❄️</h1>
+            <div class="subtitle">Capture The Flag Competition Results | Winter Edition</div>
+        </header>
+
+        <div class="controls">
+            <div class="stats">
+                <div class="stat-item">
+                    <strong>Total Teams:</strong> <span id="totalTeams">0</span>
+                </div>
+                <div class="stat-item">
+                    <strong>Showing:</strong> <span id="visibleTeams">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="scoreboardTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-column="pos">Position</th>
+                        <th class="sortable" data-column="team">Team</th>
+                        <th class="sortable" data-column="score">Score</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+            <div id="noResults" class="no-results" style="display: none;">
+                No teams found matching your search.
+            </div>
+        </div>
+
+        <footer>
+            ❄️ ATC CTF 2.0 Scoreboard - Winter Edition ❄️ | Last updated: <span id="lastUpdate"></span>
+        </footer>
+    </div>
+
+    <script>
+        // CSV data embedded in the page
+        const csvData = `pos,team,score
+1,Dokgodai,2650
+2,squ1rrel,2625
+3,IMRNES,2600
+4,{x0x},2600
+5,freaky_falcons,2600
+6,Cyb3r_Ph4nt0ms,2600
+7,B1tw1nk,2600
+8,SR-71,2600
+9,N34r 0rbi7 Van9u4rd Alli4nc3,2600
+10,EgyptianTigers,2575
+11,ZΞЯØTЯUƧT,2575
+12,krauq,2500
+13,konyalee,2500
+14,Yin,2500
+15,noob player here,2500
+16,TH0RSTR1K3,2500
+17,N33d_GP7,2500
+18,MindCrafters,2475
+19,Pandilla Mantequilla,2475
+20,CyFix,2475
+21,N!ghtM4re,2475
+22,H-T8,2475
+23,AMISH_CTF_CLUB,2450
+24,RandomHackers,2450
+25,JAGIC,2450
+26,hyhyhy,2450
+27,Oinodecam,2425
+28,Lv1x,2425
+29,play,2425
+30,Fancy Bears,2400
+31,hillo,2400
+32,!Time_For_418,2400
+33,CTF Payalunga,2375
+34,Hurja,2375
+35,dcua,2375
+36,jasprit bumrah,2350
+37,athaw,2350
+38,가즈아아아아아앙,2350
+39,Pikaa3,2325
+40,viole(n)t,2325
+41,Jago Endak Badut Iya,2325
+42,cybplt4fun4now,2300
+43,Pwnd0k,2300
+44,KattangalSec,2300
+45,b01lers,2300
+46,Ahmeng Labs,2300
+47,NovaX,2300
+48,Anggrek Mekar Pontianak,2300
+49,N3tw0rkGhosts,2300
+50,PenguinPwners,2300
+51,971Sec,2300
+52,CyberXoX,2300
+53,Indonesia Coy,2275
+54,Elitesimm,2275
+55,LappungCTF{},2275
+56,CSUI,2275
+57,S133p,2275
+58,FunCTF1234,2275
+59,CSU Maze Breakers,2275
+60,Lah-Leh,2250
+61,FINAL BOSS,2250
+62,ViperFish,2250
+63,TamatarChaat,2250
+64,%s,2250
+65,Schrodinger Bears,2250
+66,V-Tetra,2250
+67,WHITE_SOULE,2250
+68,UiACTF,2250
+69,SixSeven,2250
+70,Thryve,2225
+71,H2,2225
+72,MooTools,2225
+73,iaccep,2225
+74,dp!h3r0x,2225
+75,DWY_YK,2225
+76,CyberX,2225
+77,7aBaSLa,2225
+78,Nighthawk,2200
+79,The Man Who Sold the World,2200
+80,.exploit,2200
+81,Th3_Gu4rd1an,2200
+82,hunt3r_b0un1y,2200
+83,Chachi ki chai,2200
+84,Don't-Redeem-It!!!,2200
+85,Training,2175
+86,bup11,2175
+87,Pwncetta e Pecorino,2175
+88,FluffyDogs,2175
+89,Fukery,2150
+90,4GUn7uk,2150
+91,Xyl0n,2150
+92,The Bug Stops Here,2150
+93,Nova,2125
+94,muth_blasters,2125
+95,drogonarmy,2100
+96,imp0ster56,2100
+97,Sakur4,2100
+98,dustbusters,2075
+99,porrettenbande,2050
+100,CC!T,2050
+101,FPT dong song loi the,2050
+102,3Ncrlp3d_4v3ngeR5,2050
+103,y4ksh_n3ws4l,2050
+104,401_πR4tes,2025
+105,Mythic,2025
+106,cs3c,2000
+107,Arystech,1975
+108,The Bungulators,1950
+109,when yh bisa jdi nanuna,1950
+110,"D_T1M3R ""Dyl4n""",1950
+111,BU773TPR00F,1950
+112,taylor swift enjoyer,1925
+113,Bitcoin,1925
+114,Jarvis,1900
+115,Urako,1875
+116,scriptohio,1875
+117,EternalExploiters,1875
+118,Danger By Insecure Design,1850
+119,Vanda1s,1850
+120,R TEAM,1850
+121,173_team,1825
+122,NOVA PROSPEKT,1825
+123,Buta,1825
+124,taurus,1750
+125,LIGHTNINGsec,1725
+126,Sundried Tomatoes Squad,1725
+127,[object Object],1700
+128,*******,1675
+129,KASLR,1650
+130,D0texe,1650
+131,aimboterz,1650
+132,ctfrrteam,1650
+133,Learning Is Fun!,1650
+134,KingMU,1625
+135,thelakers,1600
+136,BorderOfLife,1600
+137,Umh4m3d_X,1575
+138,handala,1575
+139,CPEC,1575
+140,Itemize,1575
+141,w ctf gng,1550
+142,ThomasGr94,1525
+143,teamname,1500
+144,562,1500
+145,kerandoman,1500
+146,Sh4d0W_br0k3rs,1500
+147,fake_flag,1475
+148,Team Molla,1475
+149,TableForOne404,1475
+150,Eremite,1475
+151,n1m5n,1475
+152,coldboots,1450
+153,tr00p,1450
+154,hacklab Cosenza,1425
+155,R_OxPloit3rs,1400
+156,Ashen Cypher,1400
+157,Ast3r0ids,1375
+158,Dan1vex,1375
+159,FRX - Cyber Ranger Cuy,1350
+160,F4_VN,1350
+161,0nePiece,1350
+162,ctrl+Panic,1325
+163,Boink,1275
+164,G1rlP0w3r,1275
+165,CyberBu9$.,1250
+166,MadrHacks,1175
+167,DEVIL,1175
+168,plankrapid007,1150
+169,peepo,1100
+170,C7r1-417-31337,1075
+171,fnknda,1075
+172,JadenEmpire,1075
+173,w3nch,1050
+174,Zapatista,1025
+175,cL1m6rz,1000
+176,zaizr,975
+177,neil,950
+178,c0rkk_0n_g14c3!,950
+179,PirateTom,950
+180,sp4rkl3,925
+181,mikejam,875
+182,Pr1y4n5hu,875
+183,soreta,850
+184,fzhshzh,850
+185,Bengsky,800
+186,OsefNan,775
+187,Raaah,750
+188,acdwas,725
+189,XXBXX,725
+190,Tech_Wizards,725
+191,strul team,700
+192,hunter,700
+193,chmod67,675
+194,d4rkarmy8,675
+195,skkra,675
+196,EliteCollapseZ,675
+197,portabuser1,625
+198,bkalone,625
+199,nolsatukopi,600
+200,Fé,600
+201,r3d_fl4g5,600
+202,theNightSky,600
+203,CHONNAM NATIONAL UNIVERSITY,575
+204,vodanh,575
+205,mups,575
+206,Forsaken,550
+207,lythapphong,550
+208,pizza enjoyers,550
+209,Jacques,550
+210,jjroccss,550
+211,VildeSpilde,550
+212,davyskiba,525
+213,bkm3v,525
+214,JSON,525
+215,halwkkk,525
+216,Bits & Pieces,525
+217,keocon,525
+218,kh,525
+219,n0n,525
+220,VIKIVIKI,525
+221,Neubee,500
+222,186 Ninjas,500
+223,terkerr,475
+224,t4k,475
+225,tapchoictf,475
+226,Sk4r,475
+227,SBCB,450
+228,Byterrrs,450
+229,minimalis,450
+230,dunc3,450
+231,sp4r1ng,425
+232,Gemerald,425
+233,testing,425
+234,IamPierrot,425
+235,pTn1ne,425
+236,scarekr0u,425
+237,Bungkus3,425
+238,n3w_guy_4l0n3,425
+239,ri7s,400
+240,Darksouls,400
+241,hehehehehe,400
+242,GanSw,400
+243,swag,375
+244,logdav,375
+245,gw2,375
+246,gtq0x,350
+247,Byterrrss,350
+248,Lah,325
+249,rikka,325
+250,D^qu4n6,325
+251,ST3P_UP,325
+252,Emily,325
+253,MaWaiife,300
+254,maki,300
+255,Sunchaser,300
+256,Fenris,300
+257,gencombd,300
+258,TeamAardvark,275
+259,wave,275
+260,vinjr,275
+261,gluuuuurg,275
+262,onenoobarmy,275
+263,6h4T 9pT pR0,275
+264,matlamper,225
+265,RedRangers,225
+266,Holi c:,200
+267,DavidTruong,200
+268,Kamojii,200
+269,tama,200
+270,T3RRIFI3R,200
+271,NBG,175
+272,Team 2C,150
+273,Dragon Bytes,150
+274,Diii,150
+275,ExoQuest,150
+276,pastaway,150
+277,Raptors,150
+278,qnv,150
+279,lifeless,125
+280,mq,125
+281,theCraze,125
+282,SC@,125
+283,The_Ghoulies,125
+284,Ghosts,100
+285,DONDONHEBEREKE,100
+286,Tangerine,100
+287,latte_matcha,100
+288,hackerjawa,100
+289,Les Bananistes,100
+290,SDSU CDT,75
+291,Lawsuit,75
+292,sweatyrocket,75
+293,XXAA,75
+294,Mazubot,75
+295,TeamC8,75
+296,rookie,75
+297,cyberpw,75
+298,Lexicon,75
+299,Cybersec,75
+300,potato,75
+301,prayforhina,75
+302,gigi,75
+303,great sail,75
+304,nang,75
+305,Tawet,50
+306,Graychi,50
+307,bigbluewhale111,50
+308,Ventus,50
+309,Kohn,50
+310,celestials,50
+311,Thanhlam,50
+312,christyy,50
+313,1d0nt3x1st,50
+314,PSTU,50
+315,modeh,50
+316,BUGOO,50
+317,TheFool,25
+318,Neomware,25
+319,waller,25
+320,mhna.,25
+321,mawjngvux,25
+322,HardPlanck,25
+323,kw,25
+324,NaN_man_army,25
+325,edenhaka,25
+326,@nonymous,25
+327,ddsadsa,25
+328,Async,25
+329,Jacksssss,25
+330,Fortria,25
+331,Yen,25
+332, aku bobok,25
+333,Fluorine,25
+334,PersianCats,25
+335,sweety,25
+336,/bin/neko,25
+337,Spaghet,25
+338,CyberCh1ck,25
+339,dwadwa,25
+340,Alog,25
+341,zsteg,25
+342,calumari,25
+343,m1t0,25
+344,karadi,25
+345,V3n0mK@i,25
+346,czxcxzc,25
+347,Capybara,25
+348,zzzz,25
+349,WeHateMalware,25
+350,Cyber0x1,25
+351,fangbux,25
+352,kalulu,25
+353,Dawg,25
+354,HackerMuDenVN,25
+355,H3,25
+356,Jojo,25`;
+
+        // Parse CSV data
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',');
+            return lines.slice(1).map(line => {
+                const values = line.split(',');
+                return {
+                    pos: parseInt(values[0]),
+                    team: values.slice(1, -1).join(','), // Handle team names with commas
+                    score: parseInt(values[values.length - 1])
+                };
+            });
+        }
+
+        let scoreboardData = parseCSV(csvData);
+        let currentSort = { column: 'pos', direction: 'asc' };
+
+        // Render table
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            const noResults = document.getElementById('noResults');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            noResults.style.display = 'none';
+            
+            tbody.innerHTML = data.map(row => {
+                let positionHTML = `<span class="pos-cell">${row.pos}</span>`;
+                
+                if (row.pos === 1) {
+                    positionHTML = `<span class="medal gold">🥇</span>${positionHTML}`;
+                } else if (row.pos === 2) {
+                    positionHTML = `<span class="medal silver">🥈</span>${positionHTML}`;
+                } else if (row.pos === 3) {
+                    positionHTML = `<span class="medal bronze">🥉</span>${positionHTML}`;
+                }
+                
+                return `
+                    <tr>
+                        <td>${positionHTML}</td>
+                        <td class="team-cell">${row.team}</td>
+                        <td class="score-cell">${row.score.toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateStats(data.length);
+        }
+
+        // Update statistics
+        function updateStats(visibleCount) {
+            document.getElementById('totalTeams').textContent = scoreboardData.length;
+            document.getElementById('visibleTeams').textContent = visibleCount;
+        }
+
+        // Sort functionality
+        function sortData(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            scoreboardData.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (currentSort.direction === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+
+            updateSortIndicators();
+            renderTable(scoreboardData);
+        }
+
+        // Update sort indicators
+        function updateSortIndicators() {
+            document.querySelectorAll('th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+
+            const activeHeader = document.querySelector(`th[data-column="${currentSort.column}"]`);
+            if (activeHeader) {
+                activeHeader.classList.add(`sort-${currentSort.direction}`);
+            }
+        }
+
+        // Search functionality
+        function setupSearch() {
+            // Search removed for winter theme simplicity
+        }
+
+        // Setup sort handlers
+        function setupSortHandlers() {
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', () => {
+                    const column = th.dataset.column;
+                    sortData(column);
+                });
+            });
+        }
+
+        // Update last update time
+        function updateLastUpdateTime() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleString();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable(scoreboardData);
+            setupSearch();
+            setupSortHandlers();
+            updateLastUpdateTime();
+            updateSortIndicators();
+        });
+    </script>
+</body>
+</html>
